@@ -18,9 +18,9 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>user-service</module>
-        <module>reservation-service</module>
-        <module>notification-service</module>
+        <module>microservices/user-service</module>
+        <module>microservices/reservation-service</module>
+        <module>microservices/notification-service</module>
     </modules>
 
     <properties>
