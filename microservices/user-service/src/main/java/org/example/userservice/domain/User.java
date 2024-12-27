@@ -46,7 +46,8 @@ public class User extends BaseEntity {
     @Column(name = "is_banned")
     private Boolean isBanned = false;
 
-    // Ovo polje se automatski sinhronizuje sa dikriminator kolonom pomocu anotacija ispod
+    // Ovo polje se automatski settuje u zavisnosti instance objekta koja je u pitanju pomocu metoda dole
+    // ujedno funkcionise i kao diskriminator
     @Enumerated(EnumType.STRING)
     @Column(name = "role", insertable = false, updatable = false)
     private Role role;

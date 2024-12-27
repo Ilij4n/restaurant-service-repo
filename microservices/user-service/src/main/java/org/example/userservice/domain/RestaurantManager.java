@@ -14,6 +14,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class RestaurantManager extends User {
 
-    @Column(name = "employment_date", nullable = false)
+    @Column(name = "employment_date")  // Removed nullable = false
     private LocalDate employmentDate;
+
 }

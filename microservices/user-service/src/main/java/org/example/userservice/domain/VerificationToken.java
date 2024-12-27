@@ -36,8 +36,3 @@ public class VerificationToken extends BaseEntity {
     }
 }
 
-// Za slucaj da budemo zeleli da imamo vise vrsta tokena
-enum TokenType {
-    ACTIVATION,
-    PASSWORD_RESET
-}
