@@ -21,11 +21,13 @@
         <module>microservices/user-service</module>
         <module>microservices/reservation-service</module>
         <module>microservices/notification-service</module>
+        <module>security-lib/security</module>
     </modules>
 
     <properties>
         <java.version>17</java.version>
         <spring-cloud.version>2023.0.0</spring-cloud.version>
+        <jjwt.version>0.11.5</jjwt.version>
     </properties>
 
     <!-- Common dependencies for all services -->
@@ -59,6 +61,7 @@
         </dependency>
     </dependencies>
 
+    <!-- Version management for dependencies that aren't automatically managed by Spring Boot -->
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -67,6 +70,22 @@
                 <version>${spring-cloud.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <!-- JWT Dependencies -->
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-api</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-impl</artifactId>
+                <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt-jackson</artifactId>
+                <version>${jjwt.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

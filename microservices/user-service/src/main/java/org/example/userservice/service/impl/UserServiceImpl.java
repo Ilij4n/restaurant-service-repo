@@ -7,7 +7,7 @@ import org.example.userservice.dto.*;
 import org.example.userservice.mapper.UserMapper;
 import org.example.userservice.repository.UserRepository;
 import org.example.userservice.repository.VerificationTokenRepository;
-import org.example.userservice.security.service.TokenService;
+import org.example.security.service.TokenService;
 import org.example.userservice.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

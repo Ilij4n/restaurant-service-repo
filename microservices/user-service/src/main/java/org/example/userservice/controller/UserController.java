@@ -1,14 +1,14 @@
 package org.example.userservice.controller;
 
 import jakarta.validation.Valid;
+import org.example.security.annotation.CheckSecurity;
+import org.example.security.domain.Role;
 import org.example.userservice.dto.*;
-import org.example.userservice.security.CheckSecurity;
-import org.example.userservice.domain.Role;
 import org.example.userservice.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import io.jsonwebtoken.Claims;
-import org.example.userservice.security.service.TokenService;
+import org.example.security.service.TokenService;
 
 @RestController
 @RequestMapping("/api")
@@ -90,10 +90,7 @@ public class UserController {
 
     @PutMapping("/users/reservations-count/{userId}")
     @CheckSecurity(roles = {Role.CLIENT, Role.MANAGER, Role.ADMIN})
-    public ResponseEntity<ReservationCountDto> updateReservationCount(
-            @RequestHeader("Authorization") String authorization,
-            @PathVariable Long userId,
-            @Valid @RequestBody UpdateReservationCountDto dto) {
+    public ResponseEntity<ReservationCountDto> updateReservationCount(@RequestHeader("Authorization") String authorization, @PathVariable Long userId, @Valid @RequestBody UpdateReservationCountDto dto) {
         ReservationCountDto response = userService.updateReservationCount(userId, dto.getIncrement());
         return ResponseEntity.ok(response);
     }

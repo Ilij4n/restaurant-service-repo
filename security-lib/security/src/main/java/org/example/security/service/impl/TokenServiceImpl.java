@@ -1,6 +1,6 @@
-package org.example.userservice.security.service.impl;
+package org.example.security.service.impl;
 
-import org.example.userservice.security.service.TokenService;
+import org.example.security.service.TokenService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

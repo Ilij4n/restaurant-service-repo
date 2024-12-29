@@ -1,7 +1,8 @@
-package org.example.userservice.security;
+package org.example.security.aspect;
 
-import org.example.userservice.domain.Role;
-import org.example.userservice.security.service.TokenService;
+import org.example.security.annotation.CheckSecurity;
+import org.example.security.domain.Role;
+import org.example.security.service.TokenService;
 import io.jsonwebtoken.Claims;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -28,7 +29,7 @@ public class SecurityAspect {
         this.tokenService = tokenService;
     }
 
-    @Around("@annotation(org.example.userservice.security.CheckSecurity)")
+    @Around("@annotation(org.example.security.annotation.CheckSecurity)")
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
         //Get method signature
         MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();

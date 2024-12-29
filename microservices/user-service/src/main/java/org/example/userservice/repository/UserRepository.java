@@ -1,6 +1,6 @@
 package org.example.userservice.repository;
 
-import org.example.userservice.domain.Role;
+import org.example.security.domain.Role;
 import org.example.userservice.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -42,6 +42,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // FIXME - verovatno izdvojiti ovo u zaseban ClientRepo jer reservationCount nije polje usera
     // Takodje implementirati metodu koja vraca broj rezervacija za user id umesto ove
     // Find users eligible for loyalty benefits (clients with minimum reservation count)
-    @Query("SELECT u FROM User u WHERE TYPE(u) = Client AND u.reservationCount >= :minReservations")
-    List<User> findClientsWithMinimumReservations(@Param("minReservations") Integer minReservations);
+//    @Query("SELECT u FROM User u WHERE TYPE(u) = Client AND u.reservationCount >= :minReservations")
+//    List<User> findClientsWithMinimumReservations(@Param("minReservations") Integer minReservations);
 }

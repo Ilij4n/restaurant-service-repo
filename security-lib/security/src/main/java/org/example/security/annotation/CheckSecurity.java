@@ -1,7 +1,7 @@
-package org.example.userservice.security;
+package org.example.security.annotation;
 
-import org.example.userservice.domain.Role;
 
+import org.example.security.domain.Role;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

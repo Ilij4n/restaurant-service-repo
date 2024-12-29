@@ -1,4 +1,4 @@
-package org.example.userservice.domain;
+package org.example.security.domain;
 
 public enum Role {
     ADMIN,
