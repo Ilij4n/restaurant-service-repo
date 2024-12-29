@@ -1,24 +1,30 @@
 package org.example.userservice.exception;
 
 import org.example.userservice.dto.MessageResponseDto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.stream.Collectors;
-// Dunno how it does its magic yet, but it does so implicitly, so i do not really care
+
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    // Handle validation exceptions (triggered by @Valid)
+    // Adding a logger to help with debugging
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<MessageResponseDto> handleValidation(MethodArgumentNotValidException ex) {
-        // Collect all validation errors into a single message
         String message = ex.getBindingResult().getFieldErrors().stream()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .collect(Collectors.joining(", "));
+
+        logger.error("Validation error: {}", message, ex);
 
         MessageResponseDto response = new MessageResponseDto();
         response.setSuccess(false);
@@ -26,21 +32,15 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
-    // Handle our general runtime exceptions
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<MessageResponseDto> handleRuntime(RuntimeException ex) {
+        // Log the full stack trace for debugging
+        logger.error("Runtime exception occurred: ", ex);
+
         MessageResponseDto response = new MessageResponseDto();
         response.setSuccess(false);
-        response.setMessage(ex.getMessage());
+        response.setMessage("Runtime error: " + ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
-    // Handle unexpected errors
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<MessageResponseDto> handleGeneral(Exception ex) {
-        MessageResponseDto response = new MessageResponseDto();
-        response.setSuccess(false);
-        response.setMessage("An unexpected error occurred");
-        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
 }

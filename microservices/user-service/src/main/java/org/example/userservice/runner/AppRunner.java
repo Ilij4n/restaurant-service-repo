@@ -91,8 +91,8 @@ public class AppRunner implements CommandLineRunner {
         System.out.println("Finding active users: " +
                 userRepository.findByIsActiveTrueAndDeletedFalse().size());
 
-        System.out.println("Finding clients with minimum 5 reservations: " +
-                userRepository.findClientsWithMinimumReservations(5).size());
+//        System.out.println("Finding clients with minimum 5 reservations: " +
+//                userRepository.findClientsWithMinimumReservations(5).size());
 
         System.out.println("Finding valid tokens for client: " +
                 verificationTokenRepository.findValidTokens(client, TokenType.ACTIVATION, LocalDateTime.now()).size());
