@@ -11,6 +11,7 @@ public class UpdateUserDto {
     private String firstName;
     private String lastName;
 
+    // Note, promena maila nije dozvoljena
     @Email(message = "Please provide a valid email address")
     private String email;
 

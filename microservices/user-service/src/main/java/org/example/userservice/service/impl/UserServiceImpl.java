@@ -44,11 +44,7 @@ public class UserServiceImpl implements UserService {
         // Check if user with given username and email exists
         validateRegistration(dto);
 
-        // If not, create a new domain entity, with the fields given in dto
-        Client client = new Client();
-        // Does the thing stated above
-        mapCommonUserFields(client, dto);
-        client.setReservationCount(0);
+        Client client = userMapper.toClient(dto);
         // Persists the entry in the database
         client = userRepository.save(client);
 
@@ -65,11 +61,7 @@ public class UserServiceImpl implements UserService {
     public UserDetailsDto registerManager(UserRegisterDto dto) {
         // Same as in user registration
         validateRegistration(dto);
-
-        RestaurantManager manager = new RestaurantManager();
-        mapCommonUserFields(manager, dto);
-        manager.setRestaurantName(dto.getRestaurantName());
-        manager.setEmploymentDate(dto.getEmploymentDate());
+        RestaurantManager manager = userMapper.toManager(dto);
 
         manager = userRepository.save(manager);
         sendVerificationToken(manager);
@@ -174,7 +166,7 @@ public class UserServiceImpl implements UserService {
         if (!(user instanceof Client)) {
             throw new RuntimeException("User is not a client");
         }
-
+        // Previse mi je bilo da pravim mapper za ovo
         ReservationCountDto dto = new ReservationCountDto();
         dto.setUserId(userId);
         dto.setCount(((Client) user).getReservationCount());
@@ -200,6 +192,7 @@ public class UserServiceImpl implements UserService {
 
         client = userRepository.save(client);
 
+        // Previse mi je bilo da pravim mapper za ovo
         ReservationCountDto dto = new ReservationCountDto();
         dto.setUserId(userId);
         dto.setCount(client.getReservationCount());
@@ -216,16 +209,6 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    private void mapCommonUserFields(User user, UserRegisterDto dto) {
-        user.setUsername(dto.getUsername());
-        user.setPassword(dto.getPassword()); // Ive decided to save the password as a plain string
-        user.setEmail(dto.getEmail());
-        user.setFirstName(dto.getFirstName());
-        user.setLastName(dto.getLastName());
-        user.setDateOfBirth(dto.getDateOfBirth());
-        user.setIsActive(false);
-        user.setIsBanned(false);
-    }
 
     private void sendVerificationToken(User user) {
         VerificationToken verificationToken = new VerificationToken();
