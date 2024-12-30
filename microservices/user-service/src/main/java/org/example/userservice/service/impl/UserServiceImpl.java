@@ -40,7 +40,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserDetailsDto registerClient(UserRegisterDto dto) {
+    public RegistrationResponseDto registerClient(UserRegisterDto dto) {
         // Check if user with given username and email exists
         validateRegistration(dto);
 
@@ -48,25 +48,37 @@ public class UserServiceImpl implements UserService {
         // Persists the entry in the database
         client = userRepository.save(client);
 
-        // Generates and sends a verification token to the user - not yet fully implemented, notification-service does not exist yet!
-        sendVerificationToken(client);
+        // Generate verification token
+        VerificationToken verificationToken = createVerificationToken(client);
 
-        // Returns a userDetails (extended register dto essentially) to the front
-        // This one may contain more fields than necessary (such as isActive, isBanned and so on)... But we do not really care, we can just not process them at all
-        return userMapper.toDto(client);
+        // TODO: Implement email sending functionality here probably...
+
+        // Returns an email (similar to id since unique) and a verification token to the front (made more sense so i changed it from a full UserDetailsDto)
+        return RegistrationResponseDto.builder()
+                .verificationToken(verificationToken.getToken())
+                .email(client.getEmail())
+                .message("Registration successful. Please check your email to verify your account.")
+                .build();
     }
 
     @Override
     @Transactional
-    public UserDetailsDto registerManager(UserRegisterDto dto) {
+    public RegistrationResponseDto registerManager(UserRegisterDto dto) {
         // Same as in user registration
         validateRegistration(dto);
         RestaurantManager manager = userMapper.toManager(dto);
 
         manager = userRepository.save(manager);
-        sendVerificationToken(manager);
+        VerificationToken verificationToken = createVerificationToken(manager);
 
-        return userMapper.toDto(manager);
+        // TODO: Implement email sending functionality here probably...
+
+        // Returns an email (similar to id since unique) and a verification token to the front (made more sense so i changed it from a full UserDetailsDto)
+        return RegistrationResponseDto.builder()
+                .verificationToken(verificationToken.getToken())
+                .email(manager.getEmail())
+                .message("Registration successful. Please check your email to verify your account.")
+                .build();
     }
 
     @Override
@@ -139,9 +151,19 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        // Malo nakaradna logika, ali sta da se radi...
         if (dto.getFirstName() != null) user.setFirstName(dto.getFirstName());
         if (dto.getLastName() != null) user.setLastName(dto.getLastName());
         if (dto.getDateOfBirth() != null) user.setDateOfBirth(dto.getDateOfBirth());
+
+        // Update username if provided
+        if (dto.getUsername() != null) {
+            // Simple existence check - if anyone has this username, it's taken
+            if (userRepository.existsByUsername(dto.getUsername())) {
+                throw new RuntimeException("Username is already taken");
+            }
+            user.setUsername(dto.getUsername());
+        }
 
         user = userRepository.save(user);
         return userMapper.toDto(user);
@@ -210,14 +232,13 @@ public class UserServiceImpl implements UserService {
     }
 
 
-    private void sendVerificationToken(User user) {
+    // Helper method to create verification token
+    private VerificationToken createVerificationToken(User user) {
         VerificationToken verificationToken = new VerificationToken();
         verificationToken.setToken(UUID.randomUUID().toString());
         verificationToken.setUser(user);
         verificationToken.setTokenType(TokenType.ACTIVATION);
         verificationToken.setExpiryDate(LocalDateTime.now().plusDays(1));
-        tokenRepository.save(verificationToken);
-
-        // TODO: Kontaktirati NotificationService da get url sa ovim tokenom (ili kao path varijablom ili kao request param) posalje odgovarajucem useru! Ovo cemo ostaviti za kasnije
+        return tokenRepository.save(verificationToken);
     }
 }

@@ -24,16 +24,16 @@ public class UserController {
 
     // Authentication endpoints
     @PostMapping("/auth/register/client")
-    public ResponseEntity<UserDetailsDto> registerClient(@Valid @RequestBody UserRegisterDto dto) {
+    public ResponseEntity<RegistrationResponseDto> registerClient(@Valid @RequestBody UserRegisterDto dto) {
         // Simply delegate to service - validation is handled by @Valid annotation
-        UserDetailsDto response = userService.registerClient(dto);
+        RegistrationResponseDto response = userService.registerClient(dto);
         // Just return an HTTP ok response with the corresponding dto (response argument)
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/auth/register/manager")
-    public ResponseEntity<UserDetailsDto> registerManager(@Valid @RequestBody UserRegisterDto dto) {
-        UserDetailsDto response = userService.registerManager(dto);
+    public ResponseEntity<RegistrationResponseDto> registerManager(@Valid @RequestBody UserRegisterDto dto) {
+        RegistrationResponseDto response = userService.registerManager(dto);
         return ResponseEntity.ok(response);
     }
 

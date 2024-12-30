@@ -4,8 +4,8 @@ import org.example.userservice.dto.*;
 
 public interface UserService {
     // Authentication methods
-    UserDetailsDto registerClient(UserRegisterDto dto);
-    UserDetailsDto registerManager(UserRegisterDto dto);
+    RegistrationResponseDto registerClient(UserRegisterDto dto);
+    RegistrationResponseDto registerManager(UserRegisterDto dto);
     LoginResponseDto login(UserLoginDto dto);
     MessageResponseDto verifyAccount(String token);
 
