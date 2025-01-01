@@ -15,7 +15,12 @@
     <description>Reservation Service for Restaurant Reservation System</description>
 
     <dependencies>
-        <!-- Service-specific dependencies will go here -->
+        <!-- Security Module -->
+        <dependency>
+            <groupId>org.example</groupId>
+            <artifactId>security</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

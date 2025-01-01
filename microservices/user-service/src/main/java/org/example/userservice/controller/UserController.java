@@ -60,7 +60,7 @@ public class UserController {
         UserDetailsDto response = userService.getCurrentUserProfile(userId);
         return ResponseEntity.ok(response);
     }
-
+    // NOTE - zbog mogucnosti parcijalnog azuriranja profila korisnika, ovo bi teeehnicki mogao da bude patch mapping, ali manje vise i nije bitno....
     @PutMapping("/users/profile")
     @CheckSecurity(roles = {Role.CLIENT, Role.MANAGER, Role.ADMIN})
     public ResponseEntity<UserDetailsDto> updateProfile(@RequestHeader("Authorization") String authorization, @Valid @RequestBody UpdateUserDto dto) {
