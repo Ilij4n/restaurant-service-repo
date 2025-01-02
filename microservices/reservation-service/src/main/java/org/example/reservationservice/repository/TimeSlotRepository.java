@@ -1,4 +1,9 @@
 package org.example.reservationservice.repository;
 
-public interface TimeSlotRepository {
+import org.example.reservationservice.domain.TimeSlot;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface TimeSlotRepository extends JpaRepository<TimeSlot, Long> {
 }

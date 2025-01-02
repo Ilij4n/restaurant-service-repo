@@ -103,6 +103,7 @@ public class UserServiceImpl implements UserService {
         Claims claims = Jwts.claims();
         claims.put("userId", user.getId());
         claims.put("role", user.getRole().name());
+        claims.put("email", user.getEmail());
 
         LoginResponseDto response = new LoginResponseDto();
         // Standard token generation

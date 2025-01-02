@@ -21,7 +21,9 @@ public class Reservation extends BaseEntity {
     @JoinColumn(name = "time_slot_id", nullable = false)
     private TimeSlot timeSlot;
 
-    // Changed from userId to email
+    @Column(name = "user_id", nullable = false)
+    private String userId;
+
     @Column(name = "user_email", nullable = false)
     private String userEmail;
 

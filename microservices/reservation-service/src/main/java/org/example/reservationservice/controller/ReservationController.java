@@ -1,8 +1,15 @@
 package org.example.reservationservice.controller;
 
+import io.jsonwebtoken.Claims;
+import org.example.reservationservice.dto.CreateReservationDto;
+import org.example.reservationservice.dto.MessageResponseDto;
+import org.example.reservationservice.dto.ReservationDto;
+import org.example.reservationservice.dto.ReservationFilterCriteria;
+import org.example.reservationservice.service.LoyaltyService;
 import org.example.reservationservice.service.ReservationService;
 import org.example.security.annotation.CheckSecurity;
 import org.example.security.domain.Role;
+import org.example.security.service.TokenService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -14,24 +21,49 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/reservations")
 public class ReservationController {
     private final ReservationService reservationService;
+    private final TokenService tokenService;
 
-    public ReservationController(ReservationService reservationService) {
+    public ReservationController(ReservationService reservationService, TokenService tokenService) {
         this.reservationService = reservationService;
+        this.tokenService = tokenService;
     }
 
     @PostMapping("/slot/{slotId}")
     @CheckSecurity(roles = {Role.CLIENT})
-    public ResponseEntity<ReservationDto> createReservation(@RequestHeader("Authorization") String authorization, @PathVariable Long slotId, @Valid @RequestBody CreateReservationDto dto) {
-        // Feel free to elaborate the need for separate dtos here aswell, if it isnt explicitly necessary, i would have one dto for this aswell
-        return ResponseEntity.ok(reservationService.createReservation(slotId, dto));
+    public ResponseEntity<MessageResponseDto> createReservation(@RequestHeader("Authorization") String authorization, @PathVariable Long slotId, @Valid @RequestBody CreateReservationDto dto) {
+
+        // Extract user information from JWT token
+        Claims claims = tokenService.parseToken(authorization.split(" ")[1]);
+        String userEmail = claims.get("email", String.class);
+        Long userId = claims.get("userId", Long.class);
+
+        // Pass both email and userId to service layer
+        reservationService.createReservation(slotId, dto, userEmail, userId);
+
+        MessageResponseDto response = new MessageResponseDto();
+        response.setSuccess(true);
+        response.setMessage("Your reservation has been successfully created. You will receive a confirmation email shortly.");
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{reservationId}")
     @CheckSecurity(roles = {Role.CLIENT, Role.MANAGER})
-    public ResponseEntity<Void> cancelReservation(@RequestHeader("Authorization") String authorization, @PathVariable Long reservationId) {
-        // I assume passing the role/id of the user cancelling the reservation would be nice here, if we opt into doing separate business logic for each case
-        reservationService.cancelReservation(reservationId);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<MessageResponseDto> cancelReservation(@RequestHeader("Authorization") String authorization, @PathVariable Long reservationId) {
+
+        Claims claims = tokenService.parseToken(authorization.split(" ")[1]);
+        String role = claims.get("role", String.class);
+        String userEmail = claims.get("email", String.class);
+
+        // Pass both role and email to service layer
+        reservationService.cancelReservation(reservationId, Role.valueOf(role), userEmail);
+
+        MessageResponseDto response = new MessageResponseDto();
+        response.setSuccess(true);
+        response.setMessage(Role.MANAGER.name().equals(role)
+                ? "Reservation has been cancelled. The customer will be notified."
+                : "Your reservation has been cancelled. The restaurant will be notified.");
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/user")

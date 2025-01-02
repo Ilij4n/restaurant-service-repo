@@ -38,9 +38,9 @@ public class TimeSlot extends BaseEntity {
     @Column(name = "outdoor_seating")
     private Boolean outdoorSeating = false;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private SlotStatus status = SlotStatus.AVAILABLE;
+    // Used for filtering time slots on the front
+    @Column(name = "visible", nullable = false)
+    private Boolean visible = true;
 
     // Bidirectional relationship with Reservation
     @OneToMany(mappedBy = "timeSlot", cascade = CascadeType.ALL)
