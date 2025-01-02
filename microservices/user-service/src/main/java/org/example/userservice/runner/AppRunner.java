@@ -53,17 +53,33 @@ public class AppRunner implements CommandLineRunner {
         client = userRepository.save(client);
         System.out.println("Created client user with ID: " + client.getId());
 
-        // Create a restaurant manager
-        RestaurantManager manager = new RestaurantManager();
-        manager.setUsername("manager");
-        manager.setPassword("manager123");
-        manager.setEmail("manager@restaurant.com");
-        manager.setFirstName("Restaurant");
-        manager.setLastName("Manager");
-        manager.setDateOfBirth(LocalDate.of(1985, 8, 20));
-        manager.setEmploymentDate(LocalDate.of(2020, 1, 1));
-        manager = userRepository.save(manager);
-        System.out.println("Created manager user with ID: " + manager.getId());
+        // Create first restaurant manager (existing one)
+        RestaurantManager manager1 = new RestaurantManager();
+        manager1.setUsername("manager");
+        manager1.setPassword("manager123");
+        manager1.setEmail("manager@restaurant.com");
+        manager1.setFirstName("Restaurant");
+        manager1.setLastName("Manager");
+        manager1.setDateOfBirth(LocalDate.of(1985, 8, 20));
+        manager1.setEmploymentDate(LocalDate.of(2020, 1, 1));
+        manager1.setRestaurantName("First Restaurant Group");
+        manager1.setIsActive(true);
+        manager1 = userRepository.save(manager1);
+        System.out.println("Created first manager user with ID: " + manager1.getId());
+
+        // Create second restaurant manager (new addition)
+        RestaurantManager manager2 = new RestaurantManager();
+        manager2.setUsername("manager2");
+        manager2.setPassword("manager456");
+        manager2.setEmail("manager2@restaurant.com");
+        manager2.setFirstName("Sarah");
+        manager2.setLastName("Johnson");
+        manager2.setDateOfBirth(LocalDate.of(1988, 3, 15));
+        manager2.setEmploymentDate(LocalDate.of(2019, 6, 1));
+        manager2.setRestaurantName("Second Restaurant Group");
+        manager2.setIsActive(true);
+        manager2 = userRepository.save(manager2);
+        System.out.println("Created second manager user with ID: " + manager2.getId());
 
         // Create verification tokens for the client (not activated yet)
         VerificationToken activationToken = new VerificationToken();
@@ -77,7 +93,7 @@ public class AppRunner implements CommandLineRunner {
         // Create a password reset token for the manager
         VerificationToken resetToken = new VerificationToken();
         resetToken.setToken(UUID.randomUUID().toString());
-        resetToken.setUser(manager);
+        resetToken.setUser(manager1);
         resetToken.setTokenType(TokenType.PASSWORD_RESET);
         resetToken.setExpiryDate(LocalDateTime.now().plusHours(2));
         verificationTokenRepository.save(resetToken);
