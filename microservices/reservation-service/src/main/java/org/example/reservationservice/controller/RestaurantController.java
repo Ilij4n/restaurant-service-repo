@@ -37,14 +37,24 @@ public class RestaurantController {
     public ResponseEntity<RestaurantDto> createRestaurant(@RequestHeader("Authorization") String authorization, @Valid @RequestBody CreateRestaurantDto dto) {
         // Dodati servisnu logiku za ubacivanje restorana u bazu - NOTE: authorization token u pored role, u claimsu sadrzi i ID menadzera
         // Pa nije potrebno u telu slati taj id
-        return ResponseEntity.ok(restaurantService.createRestaurant(dto));
+
+        // Moramo da znamo managerId, pa ga vadimo iz tokena
+        Claims claims = tokenService.parseToken(authorization.split(" ")[1]);
+        Long managerId = claims.get("userId", Long.class);
+
+        return ResponseEntity.ok(restaurantService.createRestaurant(dto, managerId));
     }
     // Kao sto sam rekao negde u user controlleru, ovo bi po prirodi vise trebao da bude PATCH mapping, ali je u sustini svejedno
     @PutMapping("/{restaurantId}")
     @CheckSecurity(roles = {Role.MANAGER})
     public ResponseEntity<RestaurantDto> updateRestaurant(@RequestHeader("Authorization") String authorization, @PathVariable Long restaurantId, @Valid @RequestBody UpdateRestaurantDto dto) {
         // Pri pravljenju UpdateRestaurantDto-a staviti sva polja koja user moze da menja, ali pretopstaviti da sva mogu biti null, ovim omogucavamo parcijalnu promemu restorana, slicno kao u updateProfile metodi user-servicea
-        return ResponseEntity.ok(restaurantService.updateRestaurant(restaurantId, dto));
+
+        // Extract managerId from JWT claims
+        Claims claims = tokenService.parseToken(authorization.split(" ")[1]);
+        Long managerId = claims.get("userId", Long.class);
+
+        return ResponseEntity.ok(restaurantService.updateRestaurant(restaurantId, dto, managerId));
     }
 
     @GetMapping("/{restaurantId}")

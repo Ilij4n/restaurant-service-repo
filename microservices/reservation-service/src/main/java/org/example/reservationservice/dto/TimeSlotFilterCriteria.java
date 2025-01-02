@@ -4,6 +4,8 @@ import lombok.Data;
 import org.example.reservationservice.domain.SlotStatus;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 public class TimeSlotFilterCriteria {

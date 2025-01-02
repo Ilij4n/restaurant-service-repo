@@ -9,9 +9,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface RestaurantService {
-    RestaurantDto createRestaurant(@Valid CreateRestaurantDto dto);
+    RestaurantDto createRestaurant(@Valid CreateRestaurantDto dto, Long managerId);
 
-    RestaurantDto updateRestaurant(Long restaurantId, @Valid UpdateRestaurantDto dto);
+    RestaurantDto updateRestaurant(Long restaurantId, @Valid UpdateRestaurantDto dto, Long managerId);
 
     RestaurantDto getRestaurant(Long restaurantId);
 
