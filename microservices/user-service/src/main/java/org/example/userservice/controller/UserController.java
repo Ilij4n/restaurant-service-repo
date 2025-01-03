@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import io.jsonwebtoken.Claims;
 import org.example.security.service.TokenService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @RestController
 @RequestMapping("/api")
@@ -99,5 +101,11 @@ public class UserController {
     private Claims extractClaims(String authorization) {
         String token = authorization.split(" ")[1]; // Remove "Bearer " prefix
         return tokenService.parseToken(token);
+    }
+
+    @GetMapping("/users")
+    @CheckSecurity(roles = {Role.ADMIN}) // Only admins can search all users
+    public ResponseEntity<Page<UserDetailsDto>> searchUsers(@RequestHeader("Authorization") String authorization, @ModelAttribute UserFilterCriteria criteria, Pageable pageable) {
+        return ResponseEntity.ok(userService.searchUsers(criteria, pageable));
     }
 }

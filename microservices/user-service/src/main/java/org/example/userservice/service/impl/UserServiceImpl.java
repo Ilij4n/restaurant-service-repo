@@ -8,9 +8,13 @@ import org.example.userservice.mapper.UserMapper;
 import org.example.userservice.repository.UserRepository;
 import org.example.userservice.repository.VerificationTokenRepository;
 import org.example.security.service.TokenService;
+import org.example.userservice.repository.specification.UserSpecification;
 import org.example.userservice.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -220,6 +224,18 @@ public class UserServiceImpl implements UserService {
         dto.setUserId(userId);
         dto.setCount(client.getReservationCount());
         return dto;
+    }
+
+    @Override
+    public Page<UserDetailsDto> searchUsers(UserFilterCriteria criteria, Pageable pageable) {
+        // Create specification from criteria
+        Specification<User> spec = UserSpecification.withFilterCriteria(criteria);
+
+        // Execute search with pagination
+        Page<User> userPage = userRepository.findAll(spec, pageable);
+
+        // Map results to DTOs while preserving pagination
+        return userPage.map(userMapper::toDto);
     }
 
     // Helper methods
