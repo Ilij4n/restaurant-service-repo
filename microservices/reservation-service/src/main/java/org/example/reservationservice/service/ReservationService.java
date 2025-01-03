@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 public interface ReservationService {
     void createReservation(Long slotId, @Valid CreateReservationDto dto, String userEmail, Long userId);
 
-    void cancelReservation(Long reservationId, Role role, String userEmail);
+    void cancelReservation(Long reservationId, Role role, String userEmail, Long userId);
 
     Page<ReservationDto> getUserReservations(ReservationFilterCriteria criteria, Pageable pageable);
 

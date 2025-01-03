@@ -84,6 +84,14 @@ public class AppRunner implements CommandLineRunner {
         resetToken.setExpiryDate(LocalDateTime.now().plusHours(2));
         verificationTokenRepository.save(resetToken);
 
+        // Create a verification token for the original manager
+        VerificationToken verificationToken = new VerificationToken();
+        verificationToken.setToken(UUID.randomUUID().toString());
+        verificationToken.setUser(manager);
+        verificationToken.setTokenType(TokenType.ACTIVATION);
+        verificationToken.setExpiryDate(LocalDateTime.now().plusHours(2));
+        verificationTokenRepository.save(verificationToken);
+
         // Add multiple dummy clients
         System.out.println("Creating dummy clients...");
         String[] firstNames = {"Emma", "Liam", "Olivia", "Noah", "Ava", "Ethan", "Sophia", "Mason", "Isabella", "William"};

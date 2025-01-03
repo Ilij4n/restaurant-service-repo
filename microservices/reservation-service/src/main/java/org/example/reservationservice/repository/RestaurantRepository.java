@@ -26,4 +26,6 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long>, J
     // Find a specific restaurant managed by a specific manager
     @Query("SELECT r FROM Restaurant r WHERE r.id = :restaurantId AND r.managerId = :managerId AND r.deleted = false")
     Optional<Restaurant> findByIdAndManagerId(@Param("restaurantId") Long restaurantId, @Param("managerId") Long managerId);
+
+    Optional<Restaurant> findByIdAndManagerIdAndDeletedFalse(Long id, Long managerId);
 }

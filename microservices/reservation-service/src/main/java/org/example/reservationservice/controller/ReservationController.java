@@ -53,9 +53,10 @@ public class ReservationController {
         Claims claims = tokenService.parseToken(authorization.split(" ")[1]);
         String role = claims.get("role", String.class);
         String userEmail = claims.get("email", String.class);
+        Long userId = claims.get("userId", Long.class);
 
         // Pass both role and email to service layer
-        reservationService.cancelReservation(reservationId, Role.valueOf(role), userEmail);
+        reservationService.cancelReservation(reservationId, Role.valueOf(role), userEmail, userId);
 
         MessageResponseDto response = new MessageResponseDto();
         response.setSuccess(true);
@@ -73,7 +74,7 @@ public class ReservationController {
         // I assume its bad practice to have front send in any IDs at all, so we can avoid that by using the one from the token
         return ResponseEntity.ok(reservationService.getUserReservations(criteria, pageable));
     }
-    // Dunno if this endpoint will get much use from the clients, though a search similar to this will most likely often happen in service layer business logic
+
     @GetMapping("/restaurant/{restaurantId}")
     @CheckSecurity(roles = {Role.MANAGER})
     public ResponseEntity<Page<ReservationDto>> getRestaurantReservations(@RequestHeader("Authorization") String authorization, @PathVariable Long restaurantId, @ModelAttribute ReservationFilterCriteria criteria, Pageable pageable) {
