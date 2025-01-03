@@ -51,8 +51,19 @@ public class TimeSlotController {
     }
 
     @GetMapping("/restaurant/{restaurantId}")
-    public ResponseEntity<Page<OutputTimeSlotDto>> getRestaurantSlots(@PathVariable Long restaurantId, @ModelAttribute TimeSlotFilterCriteria criteria, Pageable pageable) {
-        return ResponseEntity.ok(timeSlotService.getRestaurantSlots(restaurantId, criteria, pageable));
+    public ResponseEntity<Page<OutputTimeSlotDto>> getRestaurantSlots(
+            @RequestHeader("Authorization") String authorization,
+            @PathVariable Long restaurantId,
+            @ModelAttribute TimeSlotFilterCriteria criteria,
+            Pageable pageable) {
+
+        // Extract role and userId from JWT token
+        Claims claims = tokenService.parseToken(authorization.split(" ")[1]);
+        Role userRole = Role.fromString(claims.get("role", String.class));
+        Long userId = claims.get("userId", Long.class);
+
+        // Pass the role and userId to service layer for role-specific handling
+        return ResponseEntity.ok(timeSlotService.getRestaurantSlots(restaurantId, criteria, pageable, userRole, userId));
     }
 }
 

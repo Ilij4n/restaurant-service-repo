@@ -24,6 +24,9 @@ public class TimeSlotFilterCriteria {
     // Status filter
     private SlotStatus status;
 
+    // Internal flag to control visibility filtering
+    private Boolean includeInvisible = false;
+
     // Restaurant filtering
     private Set<Long> restaurantIds;  // Allow filtering by multiple restaurants
 
