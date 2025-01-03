@@ -2,12 +2,15 @@ package org.example.reservationservice.runner;
 
 import org.example.reservationservice.domain.CuisineType;
 import org.example.reservationservice.domain.Restaurant;
+import org.example.reservationservice.domain.TimeSlot;
 import org.example.reservationservice.repository.RestaurantRepository;
+import org.example.reservationservice.repository.TimeSlotRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,11 +21,15 @@ import java.util.Random;
 public class AppRunner implements CommandLineRunner {
 
     private final RestaurantRepository restaurantRepository;
+    private final TimeSlotRepository timeSlotRepository;
     private final Random random = new Random();
+
+    private static final int SLOTS_PER_RESTAURANT = 8;
+    private static final int RESTAURANTS_TO_GENERATE = 10;
 
     // Constants for data generation
     private static final Long FIRST_MANAGER_ID = 3L;  // ID from user service AppRunner
-    private static final Long SECOND_MANAGER_ID = 4L; // This will be created in user service
+    private static final Long SECOND_MANAGER_ID = 54L;
     private static final int RESTAURANTS_PER_MANAGER = 50; // 50 restaurants per manager = 100 total
 
     // Lists for generating random restaurant names
@@ -50,8 +57,9 @@ public class AppRunner implements CommandLineRunner {
             "Zrenjanin", "Pančevo", "Čačak", "Kraljevo", "Novi Pazar"
     };
 
-    public AppRunner(RestaurantRepository restaurantRepository) {
+    public AppRunner(RestaurantRepository restaurantRepository, TimeSlotRepository timeSlotRepository) {
         this.restaurantRepository = restaurantRepository;
+        this.timeSlotRepository = timeSlotRepository;
     }
 
     @Override
@@ -66,6 +74,10 @@ public class AppRunner implements CommandLineRunner {
         createRestaurantsForManager(SECOND_MANAGER_ID);
 
         System.out.println("Test restaurant data loading completed!");
+
+        System.out.println("Creating time slots for restaurants...");
+
+        createTimeSlots();
     }
 
     private void createRestaurantsForManager(Long managerId) {
@@ -145,5 +157,71 @@ public class AppRunner implements CommandLineRunner {
 
         String template = templates[random.nextInt(templates.length)];
         return String.format(template, name, cuisineType);
+    }
+
+    private void createTimeSlots() {
+        // Get first 10 restaurants
+        List<Restaurant> restaurants = restaurantRepository.findAll()
+                .stream()
+                .limit(RESTAURANTS_TO_GENERATE)
+                .toList();
+
+        // For each restaurant, create 8 time slots
+        restaurants.forEach(this::createRestaurantTimeSlots);
+    }
+
+    private void createRestaurantTimeSlots(Restaurant restaurant) {
+        System.out.println("Creating slots for restaurant: " + restaurant.getName());
+
+        // Create slots for today and tomorrow to have some variety in dates
+        for (int i = 0; i < SLOTS_PER_RESTAURANT; i++) {
+            // Alternate between today and tomorrow
+            int daysToAdd = i % 2;
+
+            // Create base date-time
+            LocalDateTime baseTime = LocalDateTime.now()
+                    .plusDays(daysToAdd)
+                    .withMinute(0)
+                    .withSecond(0)
+                    .withNano(0);
+
+            // Create different time periods through the day
+            LocalDateTime startTime;
+            if (i < 3) {
+                // Morning slots (between 9 AM and 11 AM)
+                startTime = baseTime.withHour(9 + i);
+            } else if (i < 6) {
+                // Afternoon slots (between 2 PM and 4 PM)
+                startTime = baseTime.withHour(14 + (i - 3));
+            } else {
+                // Evening slots (between 7 PM and 9 PM)
+                startTime = baseTime.withHour(19 + (i - 6));
+            }
+
+            // Create the time slot with 2-hour duration
+            createTimeSlot(restaurant, startTime);
+        }
+    }
+
+    private void createTimeSlot(Restaurant restaurant, LocalDateTime startTime) {
+        TimeSlot slot = new TimeSlot();
+        slot.setRestaurant(restaurant);
+        slot.setStartTime(startTime);
+        slot.setEndTime(startTime.plusHours(2));  // 2-hour duration for all slots
+
+        // Randomize characteristics
+        slot.setSeatCount(generateSeatCount());
+        slot.setSmokingAllowed(random.nextBoolean());
+        slot.setOutdoorSeating(random.nextBoolean());
+        slot.setVisible(random.nextFloat() > 0.2);  // 80% slots visible, 20% hidden
+
+        timeSlotRepository.save(slot);
+        System.out.println("Created slot: " + startTime + " (Seats: " + slot.getSeatCount() + ")");
+    }
+
+    private int generateSeatCount() {
+        // Generate realistic table sizes: 2, 4, 6, or 8 seats
+        int[] tableSizes = {2, 4, 6, 8};
+        return tableSizes[random.nextInt(tableSizes.length)];
     }
 }
