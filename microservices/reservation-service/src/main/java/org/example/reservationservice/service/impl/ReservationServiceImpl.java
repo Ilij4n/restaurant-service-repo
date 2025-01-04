@@ -4,6 +4,7 @@ import org.example.reservationservice.client.UserServiceClient;
 import org.example.reservationservice.domain.*;
 import org.example.reservationservice.dto.*;
 import org.example.reservationservice.mapper.ReservationMapper;
+import org.example.reservationservice.repository.LoyaltyPerkRepository;
 import org.example.reservationservice.repository.ReservationRepository;
 import org.example.reservationservice.repository.RestaurantRepository;
 import org.example.reservationservice.repository.TimeSlotRepository;
@@ -20,6 +21,7 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.retry.annotation.Backoff;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 /**
  * Implementation of the reservation service that handles all reservation-related operations.
@@ -32,6 +34,7 @@ public class ReservationServiceImpl implements ReservationService {
     private final ReservationRepository reservationRepository;
     private final TimeSlotRepository timeSlotRepository;
     private final RestaurantRepository restaurantRepository;
+    private final LoyaltyPerkRepository loyaltyPerkRepository;
     private final ReservationMapper reservationMapper;
     private final UserServiceClient userServiceClient;
 
@@ -40,12 +43,19 @@ public class ReservationServiceImpl implements ReservationService {
     // private final UserServiceClient userServiceClient;
 
     @Autowired
-    public ReservationServiceImpl(ReservationRepository reservationRepository, TimeSlotRepository timeSlotRepository, ReservationMapper reservationMapper, RestaurantRepository restaurantRepository, UserServiceClient userServiceClient) {
+    public ReservationServiceImpl(ReservationRepository reservationRepository,
+                                  TimeSlotRepository timeSlotRepository,
+                                  ReservationMapper reservationMapper,
+                                  RestaurantRepository restaurantRepository,
+                                  UserServiceClient userServiceClient,
+                                  LoyaltyPerkRepository loyaltyPerkRepository) {
+
         this.reservationRepository = reservationRepository;
         this.timeSlotRepository = timeSlotRepository;
         this.reservationMapper = reservationMapper;
         this.restaurantRepository = restaurantRepository;
         this.userServiceClient = userServiceClient;
+        this.loyaltyPerkRepository = loyaltyPerkRepository;
     }
 
     /**
@@ -55,7 +65,7 @@ public class ReservationServiceImpl implements ReservationService {
      */
     @Override
     @Transactional
-    public void createReservation(Long slotId, CreateReservationDto dto, String userEmail, Long userId, String authToken) {
+    public MessageResponseDto createReservation(Long slotId, CreateReservationDto dto, String userEmail, Long userId, String authToken) {
         // Fetch and validate the time slot
         TimeSlot timeSlot = timeSlotRepository.findById(slotId)
                 .orElseThrow(() -> new RuntimeException("Time slot not found"));
@@ -72,23 +82,30 @@ public class ReservationServiceImpl implements ReservationService {
         // Save the reservation
         reservation = reservationRepository.save(reservation);
 
+        // Update user's reservation count and check for loyalty perks
+        ReservationCountDto countDto = userServiceClient.updateReservationCount(userId, true, authToken);
+        String loyaltyMessage = checkAndGenerateLoyaltyMessage(
+                timeSlot.getRestaurant().getId(),
+                countDto.getCount()
+        );
 
-        System.out.println("AUTH TOKEN JE: " + authToken);
-        // This one increments the counter and returns the new number of reservations
-        // Authtoken bi trebalo da sadrzi Bearer <token>
-        ReservationCountDto reservationCountDto = userServiceClient.updateReservationCount(userId, true, authToken);
+        // Create response with appropriate message
+        MessageResponseDto response = new MessageResponseDto();
+        response.setSuccess(true);
 
-        // Implementirati loyalty ovde - izvuci updejtovani broj rezervacija iz dto-a i proveriti da li
-        // Postoji entry u loyalty perk tabeli sa tim brojem dolazaka, ako postoji, appendovati tekst tog perka na mail notifikaciju
-        // ili potencijalno vratiti frontu
+        String baseMessage = "Your reservation has been successfully created.";
+        if (loyaltyMessage != null) {
+            response.setMessage(baseMessage + "\n\n" + loyaltyMessage);
+        }
+        else {
+            response.setMessage(baseMessage + " You will receive a confirmation email shortly.");
+        }
 
-        System.out.println("Count je: " + reservationCountDto.getCount());
 
 
-
-        // TODO: Implement these once the services are available
+        // TODO: Implementirati slanje odgovarajuce poruke sa perkom preko maila
         // sendReservationNotification(reservation);
-        // updateUserReservationCount(userId, true);
+        return response;
     }
 
     /**
@@ -223,6 +240,44 @@ public class ReservationServiceImpl implements ReservationService {
         return restaurantRepository
                 .findByIdAndManagerIdAndDeletedFalse(restaurantId, managerId)
                 .isPresent();
+    }
+
+    private String checkAndGenerateLoyaltyMessage(Long restaurantId, Integer visitCount) {
+        Optional<LoyaltyPerk> perk = loyaltyPerkRepository
+                .findByRestaurantIdAndRequiredVisitsAndIsActiveTrueAndDeletedFalse(
+                        restaurantId,
+                        visitCount
+                );
+
+        if (perk.isPresent()) {
+            LoyaltyPerk earnedPerk = perk.get();
+            return String.format(
+                    "Congratulations! This is your %d%s visit to %s!\n" +
+                            "You have earned the following perk for your next visit:\n" +
+                            "%s" +
+                            (earnedPerk.getDiscountPercentage() != null ?
+                                    String.format("\nDiscount: %d%%%%", earnedPerk.getDiscountPercentage()) : ""),
+                    visitCount,
+                    getOrdinalSuffix(visitCount),
+                    earnedPerk.getRestaurant().getName(),
+                    earnedPerk.getPerkDescription()
+            );
+        }
+
+        return null;
+    }
+
+    // Helper method to generate ordinal suffixes (1st, 2nd, 3rd, etc.)
+    private String getOrdinalSuffix(int number) {
+        if (number >= 11 && number <= 13) {
+            return "th";
+        }
+        return switch (number % 10) {
+            case 1 -> "st";
+            case 2 -> "nd";
+            case 3 -> "rd";
+            default -> "th";
+        };
     }
 
     // TODO: Implement these methods once services are available

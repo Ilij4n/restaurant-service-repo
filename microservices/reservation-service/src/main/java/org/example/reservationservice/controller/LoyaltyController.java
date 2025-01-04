@@ -1,6 +1,9 @@
 package org.example.reservationservice.controller;
 
+import io.jsonwebtoken.Claims;
+import org.example.reservationservice.dto.InputTimeSLotDto;
 import org.example.reservationservice.dto.LoyaltyPerkDto;
+import org.example.reservationservice.dto.OutputTimeSlotDto;
 import org.example.reservationservice.service.LoyaltyService;
 import org.example.reservationservice.service.ReservationService;
 import org.example.security.annotation.CheckSecurity;
@@ -38,6 +41,12 @@ public class LoyaltyController {
     public ResponseEntity<Void> deleteLoyaltyPerk(@RequestHeader("Authorization") String authorization, @PathVariable Long perkId) {
         loyaltyService.deleteLoyaltyPerk(perkId);
         return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/perks/{perkId}")
+    @CheckSecurity(roles = {Role.MANAGER})
+    public ResponseEntity<LoyaltyPerkDto> updateLoyaltyPerk(@RequestHeader("Authorization") String authorization, @PathVariable Long perkId, @Valid @RequestBody LoyaltyPerkDto dto) {
+        return ResponseEntity.ok(loyaltyService.updateLoyaltyPerk(perkId, dto));
     }
 
 }

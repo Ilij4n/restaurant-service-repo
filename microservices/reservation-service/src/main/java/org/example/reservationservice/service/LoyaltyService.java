@@ -11,4 +11,7 @@ public interface LoyaltyService {
     List<LoyaltyPerkDto> getRestaurantPerks(Long restaurantId);
 
     void deleteLoyaltyPerk(Long perkId);
+
+    LoyaltyPerkDto updateLoyaltyPerk(Long perkId, LoyaltyPerkDto dto);
+
 }

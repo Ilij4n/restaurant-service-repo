@@ -38,11 +38,11 @@ public class ReservationController {
         Long userId = claims.get("userId", Long.class);
 
         // Pass both email and userId to service layer
-        reservationService.createReservation(slotId, dto, userEmail, userId, authorization);
+        String loyaltyMessage = reservationService.createReservation(slotId, dto, userEmail, userId, authorization).getMessage();
 
         MessageResponseDto response = new MessageResponseDto();
         response.setSuccess(true);
-        response.setMessage("Your reservation has been successfully created. You will receive a confirmation email shortly.");
+        response.setMessage(loyaltyMessage);
         return ResponseEntity.ok(response);
     }
 
