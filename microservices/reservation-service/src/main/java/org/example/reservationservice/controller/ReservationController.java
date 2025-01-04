@@ -38,7 +38,7 @@ public class ReservationController {
         Long userId = claims.get("userId", Long.class);
 
         // Pass both email and userId to service layer
-        reservationService.createReservation(slotId, dto, userEmail, userId);
+        reservationService.createReservation(slotId, dto, userEmail, userId, authorization);
 
         MessageResponseDto response = new MessageResponseDto();
         response.setSuccess(true);
@@ -56,7 +56,8 @@ public class ReservationController {
         Long userId = claims.get("userId", Long.class);
 
         // Pass both role and email to service layer
-        reservationService.cancelReservation(reservationId, Role.valueOf(role), userEmail, userId);
+        // All of the fields extracted from the JWT token may be redundant to pass as args now, since we need the whole token for inter-service http requests done in the service layer logic
+        reservationService.cancelReservation(reservationId, Role.valueOf(role), userEmail, userId, authorization);
 
         MessageResponseDto response = new MessageResponseDto();
         response.setSuccess(true);

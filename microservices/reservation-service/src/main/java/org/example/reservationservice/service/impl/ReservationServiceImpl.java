@@ -1,5 +1,6 @@
 package org.example.reservationservice.service.impl;
 
+import org.example.reservationservice.client.UserServiceClient;
 import org.example.reservationservice.domain.*;
 import org.example.reservationservice.dto.*;
 import org.example.reservationservice.mapper.ReservationMapper;
@@ -30,19 +31,21 @@ public class ReservationServiceImpl implements ReservationService {
 
     private final ReservationRepository reservationRepository;
     private final TimeSlotRepository timeSlotRepository;
-    private RestaurantRepository restaurantRepository;
+    private final RestaurantRepository restaurantRepository;
     private final ReservationMapper reservationMapper;
+    private final UserServiceClient userServiceClient;
 
     // TODO: Add these once implemented
     // private final NotificationServiceClient notificationServiceClient;
     // private final UserServiceClient userServiceClient;
 
     @Autowired
-    public ReservationServiceImpl(ReservationRepository reservationRepository, TimeSlotRepository timeSlotRepository, ReservationMapper reservationMapper, RestaurantRepository restaurantRepository) {
+    public ReservationServiceImpl(ReservationRepository reservationRepository, TimeSlotRepository timeSlotRepository, ReservationMapper reservationMapper, RestaurantRepository restaurantRepository, UserServiceClient userServiceClient) {
         this.reservationRepository = reservationRepository;
         this.timeSlotRepository = timeSlotRepository;
         this.reservationMapper = reservationMapper;
         this.restaurantRepository = restaurantRepository;
+        this.userServiceClient = userServiceClient;
     }
 
     /**
@@ -52,8 +55,7 @@ public class ReservationServiceImpl implements ReservationService {
      */
     @Override
     @Transactional
-    @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 1000))
-    public void createReservation(Long slotId, CreateReservationDto dto, String userEmail, Long userId) {
+    public void createReservation(Long slotId, CreateReservationDto dto, String userEmail, Long userId, String authToken) {
         // Fetch and validate the time slot
         TimeSlot timeSlot = timeSlotRepository.findById(slotId)
                 .orElseThrow(() -> new RuntimeException("Time slot not found"));
@@ -70,8 +72,19 @@ public class ReservationServiceImpl implements ReservationService {
         // Save the reservation
         reservation = reservationRepository.save(reservation);
 
-        // Loyalty check might also happen here, user might get extra text in his mail regarding extra amenities
-        // This will use the global user-service reservation count, instead of the per-restaurant one, as stated in the spec
+
+        System.out.println("AUTH TOKEN JE: " + authToken);
+        // This one increments the counter and returns the new number of reservations
+        // Authtoken bi trebalo da sadrzi Bearer <token>
+        ReservationCountDto reservationCountDto = userServiceClient.updateReservationCount(userId, true, authToken);
+
+        // Implementirati loyalty ovde - izvuci updejtovani broj rezervacija iz dto-a i proveriti da li
+        // Postoji entry u loyalty perk tabeli sa tim brojem dolazaka, ako postoji, appendovati tekst tog perka na mail notifikaciju
+        // ili potencijalno vratiti frontu
+
+        System.out.println("Count je: " + reservationCountDto.getCount());
+
+
 
         // TODO: Implement these once the services are available
         // sendReservationNotification(reservation);
@@ -93,7 +106,7 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     @Transactional
-    public void cancelReservation(Long reservationId, Role role, String userEmail, Long userId) {
+    public void cancelReservation(Long reservationId, Role role, String userEmail, Long userId, String authToken) {
 
         // Fetch the reservation, including the time slot (we'll use this information later)
         // Now only fetching active user reservations - there existed an issue where the normal
@@ -137,8 +150,9 @@ public class ReservationServiceImpl implements ReservationService {
 
         // Update user's reservation count only if the client is cancelling
         if (Role.CLIENT.equals(role)) {
-            // TODO: Once user service is available:
-            // updateUserReservationCount(userId, false);
+            System.out.println("AUTH TOKEN JE: " + authToken);
+            ReservationCountDto reservationCountDto = userServiceClient.updateReservationCount(userId, false, authToken);
+            System.out.println("Count je: " + reservationCountDto.getCount());
         }
     }
 
