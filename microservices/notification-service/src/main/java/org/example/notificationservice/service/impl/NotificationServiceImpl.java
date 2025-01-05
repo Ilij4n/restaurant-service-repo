@@ -1,6 +1,8 @@
 package org.example.notificationservice.service.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.example.notificationservice.client.RestaurantServiceClient;
+import org.example.notificationservice.domain.NotificationStatus;
 import org.example.notificationservice.domain.NotificationTemplate;
 import org.example.notificationservice.domain.NotificationInstance;
 import org.example.notificationservice.dto.*;
@@ -8,6 +10,7 @@ import org.example.notificationservice.mapper.NotificationMapper;
 import org.example.notificationservice.repository.NotificationTemplateRepository;
 import org.example.notificationservice.repository.NotificationInstanceRepository;
 import org.example.notificationservice.repository.specification.NotificationSpecification;
+import org.example.notificationservice.service.EmailService;
 import org.example.notificationservice.service.NotificationService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,22 +18,29 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Service
+@Slf4j
 public class NotificationServiceImpl implements NotificationService {
     private final NotificationTemplateRepository templateRepository;
     private final NotificationInstanceRepository instanceRepository;
     private final NotificationMapper notificationMapper;
     private final RestaurantServiceClient restaurantServiceClient;
+    private final EmailService emailService;
 
     public NotificationServiceImpl(
             NotificationTemplateRepository templateRepository,
             NotificationInstanceRepository instanceRepository,
             NotificationMapper notificationMapper,
-            RestaurantServiceClient restaurantServiceClient) {
+            RestaurantServiceClient restaurantServiceClient,
+            EmailService emailService) {
         this.templateRepository = templateRepository;
         this.instanceRepository = instanceRepository;
         this.notificationMapper = notificationMapper;
         this.restaurantServiceClient = restaurantServiceClient;
+        this.emailService = emailService;
     }
 
     @Override
@@ -115,9 +125,59 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
 
-    // sendNotification implementation will be added later
     @Override
+    @Transactional
     public void sendNotification(SendNotificationRequestDto dto) {
+        // Find the template
+        NotificationTemplate template = templateRepository.findByTypeAndDeletedFalse(dto.getType())
+                .orElseThrow(() -> new RuntimeException("Notification template not found: " + dto.getType()));
 
+        // Validate parameter count
+        if (dto.getParameters().size() != template.getParameterCount()) {
+            throw new RuntimeException(String.format(
+                    "Parameter count mismatch. Expected %d, got %d",
+                    template.getParameterCount(),
+                    dto.getParameters().size()
+            ));
+        }
+
+        // Create notification instance - could be moved to mapper again
+        NotificationInstance instance = new NotificationInstance();
+        instance.setTemplate(template);
+        instance.setRecipientEmail(dto.getRecipientEmail());
+        instance.setRestaurantId(dto.getRestaurantId());
+        instance.setUserId(dto.getUserId());
+        instance.setParameters(dto.getParameters());
+
+        // Render the message by replacing parameters
+        String renderedMessage = renderMessage(template.getTemplateText(), dto.getParameters());
+        instance.setRenderedMessage(renderedMessage);
+
+        try {
+            // Send the email
+            emailService.sendEmail(
+                    dto.getRecipientEmail(),
+                    "Notification from Restaurant Reservation System", // You might want to make this configurable
+                    renderedMessage
+            );
+
+            // Update status and sent time
+            instance.setStatus(NotificationStatus.SENT);
+            instance.setSentTime(LocalDateTime.now());
+        } catch (Exception e) {
+            instance.setStatus(NotificationStatus.FAILED);
+            log.error("Failed to send email", e);
+        }
+
+        // Save the instance
+        instanceRepository.save(instance);
+    }
+
+    private String renderMessage(String template, List<String> parameters) {
+        String result = template;
+        for (String parameter : parameters) {
+            result = result.replaceFirst("%\\w+", parameter);
+        }
+        return result;
     }
 }

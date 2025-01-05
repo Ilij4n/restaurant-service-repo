@@ -12,4 +12,5 @@ public interface NotificationTemplateRepository extends JpaRepository<Notificati
     Optional<NotificationTemplate> findByType(String type);
     Optional<NotificationTemplate> findByIdAndDeletedFalse(Long id);
     boolean existsByTypeAndDeletedFalse(@NotBlank(message = "Notification type is required") String type);
+    Optional<NotificationTemplate> findByTypeAndDeletedFalse(@NotBlank(message = "Notification type is required") String type);
 }

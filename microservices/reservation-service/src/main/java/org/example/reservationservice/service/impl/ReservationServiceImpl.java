@@ -1,8 +1,10 @@
 package org.example.reservationservice.service.impl;
 
+import org.example.reservationservice.client.NotificationServiceClient;
 import org.example.reservationservice.client.UserServiceClient;
 import org.example.reservationservice.domain.*;
 import org.example.reservationservice.dto.*;
+import org.example.reservationservice.mapper.NotificationRequestMapper;
 import org.example.reservationservice.mapper.ReservationMapper;
 import org.example.reservationservice.repository.LoyaltyPerkRepository;
 import org.example.reservationservice.repository.ReservationRepository;
@@ -17,11 +19,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.retry.annotation.Retryable;
-import org.springframework.retry.annotation.Backoff;
-
 import java.time.LocalDateTime;
 import java.util.Optional;
+
 
 /**
  * Implementation of the reservation service that handles all reservation-related operations.
@@ -37,9 +37,8 @@ public class ReservationServiceImpl implements ReservationService {
     private final LoyaltyPerkRepository loyaltyPerkRepository;
     private final ReservationMapper reservationMapper;
     private final UserServiceClient userServiceClient;
-
-    // TODO: Add these once implemented
-    // private final NotificationServiceClient notificationServiceClient;
+    private final NotificationServiceClient notificationServiceClient;
+    private final NotificationRequestMapper notificationMapper;
 
     @Autowired
     public ReservationServiceImpl(ReservationRepository reservationRepository,
@@ -47,7 +46,9 @@ public class ReservationServiceImpl implements ReservationService {
                                   ReservationMapper reservationMapper,
                                   RestaurantRepository restaurantRepository,
                                   UserServiceClient userServiceClient,
-                                  LoyaltyPerkRepository loyaltyPerkRepository) {
+                                  LoyaltyPerkRepository loyaltyPerkRepository,
+                                  NotificationServiceClient notificationServiceClient,
+                                  NotificationRequestMapper notificationMapper) {
 
         this.reservationRepository = reservationRepository;
         this.timeSlotRepository = timeSlotRepository;
@@ -55,6 +56,8 @@ public class ReservationServiceImpl implements ReservationService {
         this.restaurantRepository = restaurantRepository;
         this.userServiceClient = userServiceClient;
         this.loyaltyPerkRepository = loyaltyPerkRepository;
+        this.notificationServiceClient = notificationServiceClient;
+        this.notificationMapper = notificationMapper;
     }
 
     /**
@@ -100,10 +103,17 @@ public class ReservationServiceImpl implements ReservationService {
             response.setMessage(baseMessage + " You will receive a confirmation email shortly.");
         }
 
+        // Send notification using the mapper
+        NotificationRequestDto notificationRequest = notificationMapper.toReservationConfirmationRequest(
+                timeSlot,
+                "example@example.com",
+                userId,
+                loyaltyMessage
+        );
 
+        // Asynchronously send the notification
+        notificationServiceClient.sendNotification(notificationRequest);
 
-        // TODO: Implementirati slanje odgovarajuce poruke sa perkom preko maila
-        // sendReservationNotification(reservation);
         return response;
     }
 
@@ -154,22 +164,32 @@ public class ReservationServiceImpl implements ReservationService {
 
         handleCancellation(reservation, role);
 
-        // TODO: Once notification service is available:
-        // if (Role.MANAGER.equals(role)) {
-        //     // Send notification to both manager and client
-        //     sendCancellationNotification(reservation.getUserEmail(), "Your reservation has been cancelled by the restaurant");
-        //     sendCancellationNotification(userEmail, "You have cancelled a customer's reservation");
-        // } else {
-        //     // Send notification only to client
-        //     sendCancellationNotification(userEmail, "You have cancelled your reservation");
-        // }
-
         // Update user's reservation count only if the client is cancelling
         if (Role.CLIENT.equals(role)) {
-            System.out.println("AUTH TOKEN JE: " + authToken);
             ReservationCountDto reservationCountDto = userServiceClient.updateReservationCount(userId, false, authToken);
-            System.out.println("Count je: " + reservationCountDto.getCount());
         }
+
+        // Get manager email for notifications if needed
+        String managerEmail = null;
+        if (Role.CLIENT.equals(role)) {
+            Restaurant restaurant = restaurantRepository.findById(reservation.getRestaurantId())
+                    .orElseThrow(() -> new RuntimeException("Restaurant not found"));
+            // In a real implementation, you would get the manager's email through a service call
+            // This is just a placeholder
+            managerEmail = "example@example.com"; // necu da saljem random ljudima mejlove
+        }
+
+        // Send notification using the mapper
+        NotificationRequestDto notificationRequest = notificationMapper.toCancellationRequest(
+                reservation,
+                role,
+                "example@example.com", // necu da saljem random ljudima mejlove
+                userId,
+                managerEmail
+        );
+
+        notificationServiceClient.sendNotification(notificationRequest);
+
     }
 
     /**
@@ -279,18 +299,4 @@ public class ReservationServiceImpl implements ReservationService {
         };
     }
 
-    // TODO: Implement these methods once services are available
-    /*
-    private void sendReservationNotification(Reservation reservation) {
-        // Async notification sending logic
-    }
-
-    private void sendCancellationNotification(Reservation reservation, Role canceller) {
-        // Async notification sending logic
-    }
-
-    private void updateUserReservationCount(Long userId, boolean increment) {
-        // User service communication logic
-    }
-    */
 }
