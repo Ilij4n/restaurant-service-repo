@@ -62,7 +62,7 @@ public class RestaurantController {
         return ResponseEntity.ok(restaurantService.getRestaurant(restaurantId));
     }
     // @ModelAttribute i Pageable implicitno resavaju svo filtriranje, paginaciju i sortiranje, jako su kul
-    // TODO: Sa fronta ponovo, samo koristiti requestParams na sledeci nacin:
+    // Sa fronta ponovo, samo koristiti requestParams na sledeci nacin:
     // GET /api/restaurants?name=sushi&location=tokyo&page=0&size=10&sort=name,asc
     @GetMapping
     public ResponseEntity<Page<RestaurantDto>> searchRestaurants(@ModelAttribute RestaurantFilterCriteria criteria, Pageable pageable) {

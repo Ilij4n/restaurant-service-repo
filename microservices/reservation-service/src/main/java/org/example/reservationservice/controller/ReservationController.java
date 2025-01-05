@@ -38,12 +38,7 @@ public class ReservationController {
         Long userId = claims.get("userId", Long.class);
 
         // Pass both email and userId to service layer
-        String loyaltyMessage = reservationService.createReservation(slotId, dto, userEmail, userId, authorization).getMessage();
-
-        MessageResponseDto response = new MessageResponseDto();
-        response.setSuccess(true);
-        response.setMessage(loyaltyMessage);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(reservationService.createReservation(slotId, dto, userEmail, userId, authorization));
     }
 
     @DeleteMapping("/{reservationId}")

@@ -40,7 +40,6 @@ public class ReservationServiceImpl implements ReservationService {
 
     // TODO: Add these once implemented
     // private final NotificationServiceClient notificationServiceClient;
-    // private final UserServiceClient userServiceClient;
 
     @Autowired
     public ReservationServiceImpl(ReservationRepository reservationRepository,

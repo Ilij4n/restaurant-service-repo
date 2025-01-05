@@ -15,7 +15,12 @@
 	<description>Notification Service for Restaurant Reservation System</description>
 
 	<dependencies>
-		<!-- Initially empty as all needed dependencies are in parent -->
+		<!-- Security Module -->
+		<dependency>
+			<groupId>org.example</groupId>
+			<artifactId>security</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>
