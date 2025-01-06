@@ -49,7 +49,7 @@ public class RestaurantMapper {
         dto.setOpeningTime(restaurant.getOpeningTime());
         dto.setClosingTime(restaurant.getClosingTime());
 
-        // TODO: Mozda settovati i manager email ovde...
+        // Mozda settovati i manager email ovde...
 
         // Calculate if restaurant is currently open
         LocalTime currentTime = LocalTime.now();
