@@ -1,5 +1,4 @@
 package org.example.security;
-import org.example.security.CorsConfig;
 import org.example.security.service.TokenService;
 import org.example.security.service.impl.TokenServiceImpl;
 import org.springframework.context.annotation.Bean;
@@ -11,7 +10,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @Configuration
 @EnableAspectJAutoProxy
 @ComponentScan(basePackages = "org.example.security")
-@Import(CorsConfig.class)  // Add this line
+ // Add this line
 public class SecurityConfig {
 
     @Bean

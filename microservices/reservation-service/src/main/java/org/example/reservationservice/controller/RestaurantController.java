@@ -31,7 +31,7 @@ public class RestaurantController {
         this.restaurantService = restaurantService;
         this.tokenService = tokenService;
     }
-
+//da
     @PostMapping
     @CheckSecurity(roles = {Role.MANAGER})
     public ResponseEntity<RestaurantDto> createRestaurant(@RequestHeader("Authorization") String authorization, @Valid @RequestBody CreateRestaurantDto dto) {
@@ -44,7 +44,7 @@ public class RestaurantController {
 
         return ResponseEntity.ok(restaurantService.createRestaurant(dto, managerId));
     }
-    // Kao sto sam rekao negde u user controlleru, ovo bi po prirodi vise trebao da bude PATCH mapping, ali je u sustini svejedno
+    //da
     @PutMapping("/{restaurantId}")
     @CheckSecurity(roles = {Role.MANAGER})
     public ResponseEntity<RestaurantDto> updateRestaurant(@RequestHeader("Authorization") String authorization, @PathVariable Long restaurantId, @Valid @RequestBody UpdateRestaurantDto dto) {
@@ -68,7 +68,7 @@ public class RestaurantController {
     public ResponseEntity<Page<RestaurantDto>> searchRestaurants(@ModelAttribute RestaurantFilterCriteria criteria, Pageable pageable) {
         return ResponseEntity.ok(restaurantService.searchRestaurants(criteria, pageable));
     }
-
+//da
     @GetMapping("/manager")
     @CheckSecurity(roles = {Role.MANAGER})
     public ResponseEntity<Page<RestaurantDto>> getManagerRestaurants(@RequestHeader("Authorization") String authorization, @ModelAttribute RestaurantFilterCriteria criteria, Pageable pageable) {
@@ -78,7 +78,7 @@ public class RestaurantController {
 
         return ResponseEntity.ok(restaurantService.getManagerRestaurants(managerId, criteria, pageable));
     }
-
+//da
     @GetMapping("/cuisine-types")
     public ResponseEntity<List<CuisineTypeDto>> getCuisineTypes() {
         // This will return all available cuisine types with their display names

@@ -9,15 +9,15 @@ import java.util.Set;
 
 @Data
 public class TimeSlotFilterCriteria {
-    // Time-based filters
+
     private LocalDateTime startTimeFrom;
     private LocalDateTime startTimeTo;
 
-    // Capacity filter
+
     private Integer minSeatCount;
     private Integer maxSeatCount;
 
-    // Table characteristics
+
     private Boolean smokingAllowed;
     private Boolean outdoorSeating;
 

@@ -22,6 +22,8 @@
         <module>microservices/reservation-service</module>
         <module>microservices/notification-service</module>
         <module>security-lib/security</module>
+        <module>microservices/api-gateway/eureka-server</module>
+        <module>microservices/api-gateway/api-gateway</module>
     </modules>
 
     <properties>
