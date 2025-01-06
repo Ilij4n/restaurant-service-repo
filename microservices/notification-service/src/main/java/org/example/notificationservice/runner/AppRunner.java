@@ -77,6 +77,16 @@ public class AppRunner implements CommandLineRunner {
         );
         templateRepository.save(passwordResetTemplate);
 
+        createTemplate(
+                "RESERVATION_REMINDER",
+                "Hello %email,\n\n" +
+                        "This is a reminder about your upcoming reservation at %restaurantName " +
+                        "scheduled for %dateTime.\n\n" +
+                        "We look forward to seeing you!\n\n" +
+                        "Best regards,\n" +
+                        "Restaurant Reservation Team"
+        );
+
         System.out.println("Notification templates created successfully!");
     }
 
