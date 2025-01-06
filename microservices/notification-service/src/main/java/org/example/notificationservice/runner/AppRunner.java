@@ -65,6 +65,18 @@ public class AppRunner implements CommandLineRunner {
                         "Restaurant Reservation Team"
         );
 
+        NotificationTemplate passwordResetTemplate = new NotificationTemplate();
+        passwordResetTemplate.setType("PASSWORD_RESET");
+        passwordResetTemplate.setTemplateText(
+                "Hello %firstName,\n\n" +
+                        "We received a request to reset your password. " +
+                        "To reset your password, please click on the following link:\n\n" +
+                        "%resetLink\n\n" +
+                        "This link will expire in 2 hours. If you didn't request this, please ignore this email.\n\n" +
+                        "Best regards,\nRestaurant Reservation System"
+        );
+        templateRepository.save(passwordResetTemplate);
+
         System.out.println("Notification templates created successfully!");
     }
 

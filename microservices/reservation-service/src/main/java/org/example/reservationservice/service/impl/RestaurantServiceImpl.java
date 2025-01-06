@@ -100,7 +100,7 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     @Override
     @Transactional(readOnly = true)
-    // TODO: Za slucaj da zatreba - Kolko sam video, parametri za paging se mogu proslediti kao najobicniji request parametri, ovako otp:
+    // Za slucaj da zatreba - Kolko sam video, parametri za paging se mogu proslediti kao najobicniji request parametri, ovako otp:
     // GET /api/restaurants?page=0&size=10&sort=name,desc&sort=cuisineType,asc
     public Page<RestaurantDto> searchRestaurants(RestaurantFilterCriteria criteria, Pageable pageable) {
         // Create a specification based on the filter criteria

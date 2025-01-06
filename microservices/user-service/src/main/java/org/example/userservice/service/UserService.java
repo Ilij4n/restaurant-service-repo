@@ -25,4 +25,8 @@ public interface UserService {
     // User search
     Page<UserDetailsDto> searchUsers(UserFilterCriteria criteria, Pageable pageable);
 
+    // Password reset
+    MessageResponseDto initiateForgotPassword(String email);
+    MessageResponseDto resetPassword(String token, String newPassword);
+
 }

@@ -108,4 +108,18 @@ public class UserController {
     public ResponseEntity<Page<UserDetailsDto>> searchUsers(@RequestHeader("Authorization") String authorization, @ModelAttribute UserFilterCriteria criteria, Pageable pageable) {
         return ResponseEntity.ok(userService.searchUsers(criteria, pageable));
     }
+
+    // 1. First, add the forgot password endpoint to UserController
+    @PostMapping("/auth/forgot-password")
+    public ResponseEntity<MessageResponseDto> forgotPassword(@Valid @RequestBody ForgotPasswordDto dto) {
+        return ResponseEntity.ok(userService.initiateForgotPassword(dto.getEmail()));
+    }
+
+    @PatchMapping("/auth/reset-password/{token}")
+    public ResponseEntity<MessageResponseDto> resetPassword(
+            @PathVariable String token,
+            @Valid @RequestBody ResetPasswordDto dto) {
+        return ResponseEntity.ok(userService.resetPassword(token, dto.getNewPassword()));
+    }
+
 }

@@ -12,7 +12,7 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
 
     // Basic finder methods
-    Optional<User> findByEmail(String email);
+    Optional<User> findByEmailAndDeletedFalse(String email);
 
     Optional<User> findByUsername(String username);
 
@@ -23,4 +23,5 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     // Find active users
     List<User> findByIsActiveTrueAndDeletedFalse();
 
+    Optional<User> findByIdAndDeletedFalse(Long userId);
 }
