@@ -22,6 +22,8 @@
         <module>microservices/reservation-service</module>
         <module>microservices/notification-service</module>
         <module>security-lib/security</module>
+        <module>microservices/api-gateway/eureka-server</module>
+        <module>microservices/api-gateway/api-gateway</module>
     </modules>
 
     <properties>
@@ -58,6 +60,17 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <!-- RabbitMQ -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
+
+        <!-- Email -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
     </dependencies>
 

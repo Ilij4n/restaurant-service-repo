@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import io.jsonwebtoken.Claims;
 import org.example.security.service.TokenService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @RestController
 @RequestMapping("/api")
@@ -60,7 +62,7 @@ public class UserController {
         UserDetailsDto response = userService.getCurrentUserProfile(userId);
         return ResponseEntity.ok(response);
     }
-
+    // NOTE - zbog mogucnosti parcijalnog azuriranja profila korisnika, ovo bi teeehnicki mogao da bude patch mapping, ali manje vise i nije bitno....
     @PutMapping("/users/profile")
     @CheckSecurity(roles = {Role.CLIENT, Role.MANAGER, Role.ADMIN})
     public ResponseEntity<UserDetailsDto> updateProfile(@RequestHeader("Authorization") String authorization, @Valid @RequestBody UpdateUserDto dto) {
@@ -100,4 +102,24 @@ public class UserController {
         String token = authorization.split(" ")[1]; // Remove "Bearer " prefix
         return tokenService.parseToken(token);
     }
+
+    @GetMapping("/users")
+    @CheckSecurity(roles = {Role.ADMIN}) // Only admins can search all users
+    public ResponseEntity<Page<UserDetailsDto>> searchUsers(@RequestHeader("Authorization") String authorization, @ModelAttribute UserFilterCriteria criteria, Pageable pageable) {
+        return ResponseEntity.ok(userService.searchUsers(criteria, pageable));
+    }
+
+    // 1. First, add the forgot password endpoint to UserController
+    @PostMapping("/auth/forgot-password")
+    public ResponseEntity<MessageResponseDto> forgotPassword(@Valid @RequestBody ForgotPasswordDto dto) {
+        return ResponseEntity.ok(userService.initiateForgotPassword(dto.getEmail()));
+    }
+
+    @PatchMapping("/auth/reset-password/{token}")
+    public ResponseEntity<MessageResponseDto> resetPassword(
+            @PathVariable String token,
+            @Valid @RequestBody ResetPasswordDto dto) {
+        return ResponseEntity.ok(userService.resetPassword(token, dto.getNewPassword()));
+    }
+
 }

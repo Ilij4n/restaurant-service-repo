@@ -1,6 +1,8 @@
 package org.example.userservice.service;
 
 import org.example.userservice.dto.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface UserService {
     // Authentication methods
@@ -19,4 +21,12 @@ public interface UserService {
     // Reservation count management
     ReservationCountDto getReservationCount(Long userId);
     ReservationCountDto updateReservationCount(Long userId, boolean increment);
+
+    // User search
+    Page<UserDetailsDto> searchUsers(UserFilterCriteria criteria, Pageable pageable);
+
+    // Password reset
+    MessageResponseDto initiateForgotPassword(String email);
+    MessageResponseDto resetPassword(String token, String newPassword);
+
 }
